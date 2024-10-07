@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ReStoreAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController : BaseApiController
     {
         private readonly StoreContext _context;
 
@@ -26,7 +24,13 @@ namespace ReStoreAPI.Controllers
         [HttpGet("{id}")] // api/products/3
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            return await _context.Products.FindAsync(id);
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            
+            return product;
         }
     }
 }
