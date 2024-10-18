@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using ReStoreAPI.Data;
 using ReStoreAPI.Entities;
 using Microsoft.EntityFrameworkCore;
+using ReStoreAPI.Extensions;
+using ReStoreAPI.RequestHelpers;
+using System.Text.Json;
 
 namespace ReStoreAPI.Controllers
 {
@@ -16,9 +19,19 @@ namespace ReStoreAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetProducts()
+        public async Task<ActionResult<PagedList<Product>>> GetProducts([FromQuery] ProductParams productParams)
         {
-            return await _context.Products.ToListAsync();
+            var query = _context.Products
+                .Sort(productParams.OrderBy) //Extension function in ProductExtensions
+                .Search(productParams.SearchTerm) //Extension function in ProductExtensions
+                .Filter(productParams.Brands, productParams.Types) //Extension function in ProductExtensions
+                .AsQueryable();
+
+            var products = await PagedList<Product>.ToPagedList(query, productParams.PageNumber, productParams.PageSize);
+
+            Response.AddPaginationHeader(products.MetaData); //Extension function in HttpExtensions
+
+            return products;
         }
 
         [HttpGet("{id}")] // api/products/3
@@ -31,6 +44,15 @@ namespace ReStoreAPI.Controllers
             }
             
             return product;
+        }
+
+        [HttpGet("filters")]
+        public async Task<IActionResult> GetFilters()
+        {
+            var brands = await _context.Products.Select(x => x.Brand).Distinct().ToListAsync();
+            var types = await _context.Products.Select(x => x.Type).Distinct().ToListAsync();
+
+            return Ok(new {brands, types});
         }
     }
 }
