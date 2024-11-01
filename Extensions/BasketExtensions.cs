@@ -1,4 +1,5 @@
-﻿using ReStoreAPI.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using ReStoreAPI.DTOs;
 using ReStoreAPI.Entities;
 
 namespace ReStoreAPI.Extensions
@@ -23,5 +24,12 @@ namespace ReStoreAPI.Extensions
                 }).ToList()
             };
         }
+
+        public static IQueryable<Basket> RetrieveBasketWithItems(this IQueryable<Basket> query, string buyerId)
+        {
+            return query.Include(i => i.Items).ThenInclude(p => p.Product).Where(b => b.BuyerId == buyerId);
+
+        }
     }
+    
 }
