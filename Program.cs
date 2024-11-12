@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using ReStoreAPI.Data;
 using ReStoreAPI.Entities;
 using ReStoreAPI.Middleware;
+using ReStoreAPI.RequestHelpers;
 using ReStoreAPI.Services;
 using System.Text;
 
@@ -74,6 +75,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+builder.Services.AddScoped<ImageService>();
 
 var app = builder.Build();
 
